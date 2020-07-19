@@ -1,3 +1,4 @@
+import { environment } from './../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -7,7 +8,7 @@ import { Observable } from 'rxjs';
 })
 export class ItemsService {
     
-  private baseUrl = 'http://localhost:8000/api/items'; //probably need to replace this url sometime in the future
+  private baseUrl = environment.apiUrl + 'items'; //probably need to replace this url sometime in the future
 
   constructor(private http: HttpClient) { }
   
