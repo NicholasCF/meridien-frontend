@@ -1,10 +1,10 @@
-import { environment } from './../../environments/environment';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmationTemplate } from './../model-service/confirmationtemplates/confirmationtemplates';
 import { ConfirmationTemplatesService } from './../model-service/confirmationtemplates/confirmationtemplates.service';
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { apiKey } from '../settings';
 
 @Component({
   selector: 'app-confirmation-template',
@@ -13,7 +13,7 @@ import { Router } from '@angular/router';
 })
 export class ConfirmationTemplateComponent implements OnInit {
   confirmationMailForm: FormGroup;
-  apiKey = environment.apiKey;
+  apiKey = apiKey;
 
   constructor(
     private formBuilder: FormBuilder,

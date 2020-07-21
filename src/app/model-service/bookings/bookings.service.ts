@@ -1,4 +1,3 @@
-import { environment } from './../../../environments/environment';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -8,9 +7,9 @@ import { Observable } from 'rxjs';
 })
 export class BookingsService {
 
-  private baseUrlBookings = environment.apiUrl + 'bookings';
-  private baseUrlBookedItems = environment.apiUrl + 'booked-items';
-  private baseUrlBookingToken = environment.apiUrl + 'bookings/token';
+  private baseUrlBookings = 'http://localhost:8000/api/bookings';
+  private baseUrlBookedItems = 'http://localhost:8000/api/booked-items';
+  private baseUrlBookingToken = 'http://localhost:8000/api/bookings/token';
 
   constructor(private http: HttpClient) { }
 

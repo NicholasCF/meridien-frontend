@@ -1,4 +1,3 @@
-import { environment } from './../../environments/environment';
 import { Booking } from './../model-service/bookings/bookings';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
@@ -6,6 +5,7 @@ import { EmailTemplatesService } from './../model-service/emailtemplates/emailte
 import { FormGroup, FormBuilder } from '@angular/forms';
 import { EmailTemplate } from './../model-service/emailtemplates/emailtemplates';
 import { Component, Inject } from '@angular/core';
+import { apiKey } from '../settings';
 import { Router } from '@angular/router';
 
 @Component({
@@ -22,7 +22,7 @@ export class TemplateDetailDialog {
   template: EmailTemplate;
   templateParams: any;
 
-  apiKey = environment.apiKey;
+  apiKey = apiKey;
 
   constructor(
     private emailTemplatesService: EmailTemplatesService,

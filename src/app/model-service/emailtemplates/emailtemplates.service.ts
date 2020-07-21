@@ -1,4 +1,3 @@
-import { environment } from './../../../environments/environment';
 import { EmailTemplate } from './emailtemplates';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
@@ -9,8 +8,8 @@ import { Observable } from 'rxjs';
 })
 export class EmailTemplatesService {
 
-  private baseUrlTemplates = environment.apiUrl + 'email_templates';
-  private baseUrlTemplate = environment.apiUrl + 'email_template';
+  private baseUrlTemplates = 'http://localhost:8000/api/email_templates';
+  private baseUrlTemplate = 'http://localhost:8000/api/email_template';
 
 
   constructor(private http: HttpClient) { }
