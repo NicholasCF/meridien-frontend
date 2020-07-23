@@ -13,7 +13,7 @@ export class ItemsService {
   constructor(private http: HttpClient) { }
 
   getItemsList(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/skip_admin/`);
+    return this.http.get(`${this.baseUrl}/`);
   }
 
   getItem(id: number): Observable<Object> {
