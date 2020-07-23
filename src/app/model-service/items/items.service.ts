@@ -7,31 +7,31 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class ItemsService {
-    
-  private baseUrl = environment.apiUrl + 'items'; //probably need to replace this url sometime in the future
+
+  private baseUrl = 'http://localhost:8000/api/items';
 
   constructor(private http: HttpClient) { }
-  
+
   getItemsList(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/`);
+    return this.http.get(`${this.baseUrl}/skip_admin/`);
   }
-  
+
   getItem(id: number): Observable<Object> {
-    return this.http.get(`${this.baseUrl}/${id}`);
+    return this.http.get(`${this.baseUrl}/${id}/`);
   }
-  
+
   createItem(item: Object): Observable<Object> {
     return this.http.post(`${this.baseUrl}/`, item);
   }
-  
+
   updateItem(id: number, value: any): Observable<Object> {
-    return this.http.put(`${this.baseUrl}/${id}`, value);
+    return this.http.put(`${this.baseUrl}/${id}/`, value);
   }
- 
+
   deleteItem(id: number): Observable<any> {
-    return this.http.delete(`${this.baseUrl}/${id}`);
+    return this.http.delete(`${this.baseUrl}/${id}/`);
   }
-  
+
   deleteAll(): Observable<any> {
     return this.http.delete(`${this.baseUrl}/`);
   }
