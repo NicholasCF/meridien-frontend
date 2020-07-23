@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 })
 export class ItemsService {
 
-  private baseUrl = 'http://localhost:8000/api/items';
+  private baseUrl = environment.apiUrl + 'items';
 
   constructor(private http: HttpClient) { }
 
