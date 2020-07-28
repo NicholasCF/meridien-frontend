@@ -143,7 +143,7 @@ export class ItemListDialog implements OnInit {
   };
 
   // tslint:disable-next-line: variable-name
-  tableColumns_dialog = ['name', 'loan_start_time', 'loan_end_time', 'quantity'];
+  tableColumns_dialog = ['orgs', 'loan_start_time', 'loan_end_time', 'quantity'];
 
   editFormOpened = false;
 
@@ -170,7 +170,7 @@ export class ItemListDialog implements OnInit {
     for (const events of this.itemData.people) {
       this.calendarEvents.push(
         {
-          title: `${events.booking_source.name} - ${events.quantity} items`,
+          title: `${events.booking_source.organization} - ${events.quantity} items`,
           start: events.booking_source.loan_start_time,
           // substr(0,10) is to extract the date only, 86400000 is added to include the return date
           end: new Date(new Date(events.booking_source.loan_end_time).getTime() + 86400000).toISOString().substr(0, 10)
