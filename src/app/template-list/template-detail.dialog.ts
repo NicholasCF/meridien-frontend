@@ -9,10 +9,7 @@ import { Component, Inject, ViewChildren, QueryList } from '@angular/core';
 import { Router } from '@angular/router';
 import { BookedItem } from '../model-service/items/items';
 import { BookingsService } from '../model-service/bookings/bookings.service';
-<<<<<<< HEAD
-=======
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
->>>>>>> c061d2cfb486044dcd50b2884050ee8a75887782
 
 @Component({
   selector: 'app-template-detail-dialog',
