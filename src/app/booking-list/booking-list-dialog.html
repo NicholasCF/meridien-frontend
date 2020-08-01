@@ -26,9 +26,11 @@
     <h2 style="color:#777777">Booking details</h2>
     <mat-label>Booked by: {{bookingData.source.name}}</mat-label>
     <br>
+    <mat-label>Organization: {{bookingData.source.organization}}</mat-label>
+    <br>
     <mat-label>Email: {{bookingData.source.email}}</mat-label>
     <br>
-    <mat-label>Organization: {{bookingData.source.organization}}</mat-label>
+    <mat-label>Contact Number: {{bookingData.source.phone_no}}</mat-label>
     <br>
     <mat-label>Time booked: {{bookingData.source.time_booked|date: 'd MMM yyyy HH:mm:ss'}}</mat-label>
     <br>
@@ -42,7 +44,7 @@
     <br>
     <mat-label>Amount paid: ${{bookingData.source.amount_paid}}</mat-label>
     <br>
-    <mat-label>Status: {{bookingData.source.status}}</mat-label>
+    <mat-label>Status: {{returnStatusString(bookingData.source.status)}}</mat-label>
     <br>
   </div>
   <div class="column-right">
@@ -58,7 +60,7 @@
       </ng-container>
       <ng-container matColumnDef="status">
         <mat-header-cell *matHeaderCellDef> Status </mat-header-cell>
-        <mat-cell *matCellDef="let booked_item"> {{booked_item.status}} </mat-cell>
+        <mat-cell *matCellDef="let booked_item"> {{returnStatusString(booked_item.status)}} </mat-cell>
       </ng-container>
       <mat-header-row *matHeaderRowDef="tableColumnsBookedItems"></mat-header-row>
       <mat-row *matRowDef="let row; columns: tableColumnsBookedItems;"></mat-row>
@@ -66,8 +68,16 @@
   </div>
 </div>
 
+<div mat-dialog-actions *ngIf="bookingData.source.status === 'UNC' || returnStatusString(bookingData.source.status) === 'Unknown'" align="end">
+  <button mat-button (click)="confirmDelete()">
+    <mat-icon matPrefix>delete_forever</mat-icon>
+    Remove
+  </button>
+</div>
+
 <div mat-dialog-actions *ngIf="bookingData.source.status === 'PEN'" align="end">
   <button mat-button (click)="editBooking()">
+    <mat-icon matPrefix>edit</mat-icon>
     Edit
   </button>
 
@@ -84,29 +94,13 @@
     Revoke
   </button>
 
-  <button mat-button *ngIf="bookingData.source.status !== 'GET'" (click)="updateStatus('GET')">
+  <button mat-button (click)="getLogistics()">
     Retrieve Logistics
-  </button>
-
-  <button mat-button (click)="confirmDelete()">
-    <mat-icon matPrefix>clear</mat-icon>
-    Remove
   </button>
 </div>
 
 <div mat-dialog-actions *ngIf="bookingData.source.status === 'GET'" align="end">
-  <button mat-button (click)="updateStatus('RET')">
+  <button mat-button (click)="returnLogistics()">
     Return Logistics
-  </button>
-  <button mat-button (click)="confirmDelete()">
-    <mat-icon matPrefix>clear</mat-icon>
-    Remove
-  </button>
-</div>
-
-<div mat-dialog-actions *ngIf="bookingData.source.status === 'RET'" align="end">
-  <button mat-button (click)="confirmDelete()">
-    <mat-icon matPrefix>clear</mat-icon>
-    Remove
   </button>
 </div>

@@ -5,6 +5,7 @@ import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/fo
 import { BookingsService } from '../model-service/bookings/bookings.service';
 import { Booking } from '../model-service/bookings/bookings';
 import { BookedItem } from '../model-service/items/items';
+import { getStatus } from '../model-service/statustranslator';
 
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -17,7 +18,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import moment from 'moment';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { CalendarOptions } from '@fullcalendar/angular';
-import dayGridPlugin from '@fullcalendar/daygrid';
 
 @Component({
   // tslint:disable-next-line: component-selector
@@ -119,14 +119,22 @@ export class BookingListComponent implements OnInit {
           if (Date.parse(data.time_booked.toString()) > Date.parse(filter[value]) + 86399999) {
             return false;
           }
+        } else if (value === 'status') {
+          if (!getStatus(data[value]).toLowerCase().includes(filter[value].toLowerCase())) {
+            return false;
+          }
         } else {
-          if (!data[value].includes(filter[value])) {
+          if (!data[value].toLowerCase().includes(filter[value].toLowerCase())) {
             return false;
           }
         }
       }
     }
     return true;
+  }
+
+  returnStatusString(code: string) {
+    return getStatus(code);
   }
 }
 
@@ -153,37 +161,20 @@ export class BookingListDialog {
     delete bookingDataCopy.id;
     bookingDataCopy.status = status;
     this.bookingData.source.status = status;
-    if (status !== 'GET') {
-      this.bookingsService.updateBooking(this.bookingData.source.id, bookingDataCopy).subscribe();
-      this.dialogRef.close();
-      this.printSnackBarStatus(status);
-    } else {
-      const dialogR = this.dialog.open(BookingDepositDialog, { data: this.bookingData.source.deposit_left });
-      dialogR.afterClosed().subscribe((result) => {
-        if (result) {// the amount paid must be returned from the dialog to complete the transaction
-          bookingDataCopy.amount_paid = Math.min(bookingDataCopy.deposit_left, result);
-          bookingDataCopy.deposit_left = Math.max(0, bookingDataCopy.deposit_left - result);
-          this.bookingsService.updateBooking(this.bookingData.source.id, bookingDataCopy).subscribe();
-          this.dialogRef.close();
-          this.printSnackBarStatus(status);
-        }
-      });
+    if (status === 'GET') {
+      bookingDataCopy.amount_paid = bookingDataCopy.deposit_left;
     }
+    this.bookingsService.updateBooking(this.bookingData.source.id, bookingDataCopy).subscribe();
+    this.dialogRef.close();
+    this.printSnackBarStatus(status);
   }
 
   printSnackBarStatus(status: string) {
-    let snackbarString = '';
-    if (status === 'PEN') {
-      snackbarString = 'Pending';
-    } else if (status === 'PRO') {
-      snackbarString = 'Processed';
-    } else if (status === 'GET') {
-      snackbarString = 'Retrieved';
-    } else if (status === 'RET') {
-      snackbarString = 'Returned';
-    }
+    this.snackbar.open(`Status of Booking #${this.bookingData.source.id} changed to: ${getStatus(status)}`, 'OK', { duration: 5000, });
+  }
 
-    this.snackbar.open(`Status of Booking #${this.bookingData.source.id} changed to: ${snackbarString}`, 'OK', { duration: 5000, });
+  returnStatusString(code: string) {
+    return getStatus(code);
   }
 
   processAndEmail() {
@@ -191,13 +182,22 @@ export class BookingListDialog {
     this.router.navigate(['/templates'], { state: { booking: this.bookingData } });
   }
 
-  revoke(){
+  revoke() {
     this.updateStatus('PEN');
     this.bookingData.booked_items.forEach((ele) => {
       this.bookingsService.updateBookedItem(ele.id,
         { booking_source: ele.booking_source.id, item: ele.item.id, quantity: ele.quantity, status: 'PEN' }).subscribe();
     });
   }
+
+  getLogistics() {
+    this.updateStatus('GET');
+  }
+
+  returnLogistics() {
+    this.updateStatus('RET');
+  }
+
 
   deleteBooking() {
     this.bookingsService.deleteBooking(this.bookingData.source.id).subscribe();
@@ -234,7 +234,6 @@ export class BookingSummaryDialog implements OnInit {
   calendarEvents = [];
 
   calendarOptions: CalendarOptions = {
-    plugins: [dayGridPlugin],
     initialView: 'dayGridWeek',
     height: '500px',
     locale: 'en-au',
@@ -269,38 +268,5 @@ export class BookingSummaryDialog implements OnInit {
       case 3:
         return '#0dd186';
     }
-  }
-}
-
-// dialog for collecting deposit.
-@Component({
-  // tslint:disable-next-line: component-selector
-  selector: 'booking-deposit-dialog',
-  templateUrl: './booking-deposit.dialog.html',
-})
-
-// tslint:disable-next-line: component-class-suffix
-export class BookingDepositDialog implements OnInit {
-
-  depositForm: FormGroup;
-
-  constructor(
-    public dialogRef: MatDialogRef<BookingDepositDialog>,
-    private formBuilder: FormBuilder,
-    @Inject(MAT_DIALOG_DATA) public deposit: any
-  ) { }
-
-  ngOnInit(): void {
-    this.depositForm = this.formBuilder.group({
-      amountPaid: [0, Validators.required]
-    });
-  }
-
-  onSubmit() {
-    this.dialogRef.close(this.depositForm.value.amountPaid);
-  }
-
-  getChange() {
-    return this.depositForm.value.amountPaid - this.deposit;
   }
 }

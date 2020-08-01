@@ -1,7 +1,7 @@
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmationTemplatesService } from './../model-service/confirmationtemplates/confirmationtemplates.service';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, AbstractControl, FormArray } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, AbstractControl, FormArray, ValidationErrors, AsyncValidatorFn } from '@angular/forms';
 import { BookingsService } from '../model-service/bookings/bookings.service';
 
 import { MAT_MOMENT_DATE_FORMATS, MomentDateAdapter } from '@angular/material-moment-adapter';
@@ -11,6 +11,10 @@ import { Items, BookedItem } from '../model-service/items/items';
 import { ItemsService } from '../model-service/items/items.service';
 import { Booking } from '../model-service/bookings/bookings';
 import { Router } from '@angular/router';
+import { Dictionary } from '@fullcalendar/core';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { ComponentBridgingService } from '../model-service/componentbridging.service';
 
 @Component({
   selector: 'app-booking-details',
@@ -39,25 +43,28 @@ export class BookingDetailsComponent implements OnInit {
     private formBuilder: FormBuilder,
     private bookingsService: BookingsService,
     private itemsService: ItemsService,
+    private service: ComponentBridgingService,
     private router: Router
-  ) { }
+  ) { this.itemsService.getItemsList().subscribe(data => { this.itemArray = data; }); }
 
   ngOnInit() {
     this.editMode = history.state.edit ? true : false;
 
-    this.itemsService.getItemsList().subscribe(data => { this.itemArray = data; });
     this.detailsForm = this.formBuilder.group({
       name: [history.state.source ? history.state.source.name : '', Validators.required],
       email: [history.state.source ? history.state.source.email : '', [Validators.required, this.emailCheck]],
       organization: [history.state.source ? history.state.source.organization : '', Validators.required],
+      phone_no: [history.state.source ? history.state.srouce.phone_no : '', [Validators.required, this.phoneCheck]],
       reason: [history.state.source ? history.state.source.reason : '', Validators.required],
       loan_start_time: [history.state.source ? history.state.source.loan_start_time : '', [Validators.required, this.dateCheck]],
       loan_end_time: [history.state.source ? history.state.source.loan_end_time : '', [Validators.required, this.dateCheck]],
     });
     this.itemsForm = this.formBuilder.group({
-      items: (history.state.booked_items ?
-        this.formBuilder.array(this.initialItemInput(history.state.booked_items)) :
-        this.formBuilder.array([this.newItemInput()]))
+      items: history.state.booked_items ?
+        new FormArray(this.initialItemInput(history.state.booked_items),
+          [this.checkForRepeat], ExceedAmountValidator.createExceedAmountValidator(this.itemsService)) :
+        new FormArray([this.newItemInput()],
+          [this.checkForRepeat], ExceedAmountValidator.createExceedAmountValidator(this.itemsService))
     });
 
     this.checkout();
@@ -67,13 +74,17 @@ export class BookingDetailsComponent implements OnInit {
     return moment(control.value).isValid() ? null : { date: true };
   }
 
+  phoneCheck(control: AbstractControl): any {
+    return new RegExp('(8[1-8][0-9]{6}|9[0-8][0-9]{6})').test(control.value) ? null : { phone: true };
+  }
+
   emailCheck(control: AbstractControl): any {
     return new RegExp('e[0-9]{7}@u\.nus\.edu').test(control.value) ? null : { email: true };
   }
 
   newItemInput(): FormGroup {
     return this.formBuilder.group({
-      item: [2, Validators.required],
+      item: [2, [Validators.required]],
       quantity: [1, [Validators.required, Validators.min(1)]]
     });
   }
@@ -129,7 +140,34 @@ export class BookingDetailsComponent implements OnInit {
     }
   }
 
+  checkForRepeat(formArray: FormArray) {
+    const itemDict: Dictionary = {};
+    formArray.value.forEach((ele) => {
+      if (itemDict[ele.item]) {
+        itemDict[ele.item] += 1;
+      } else {
+        itemDict[ele.item] = 1;
+      }
+    });
+    for (const key in itemDict) {
+      if (itemDict[key] > 1) {
+        return { duplicate: true };
+      }
+    }
+  }
+
+  // check if the form returns duplicate error
+  checkForErrors() {
+    const controlErrors: ValidationErrors = this.itemsForm.get('items').errors;
+    return controlErrors ? controlErrors : { duplicate: false, exceed: false };
+  }
+
+  print() {
+    window.print();
+  }
+
   onSubmit() {
+    this.service.publish('bookingSubmitted');
     const bookingDataCopy = { ...this.inputGroup1 };
     const finalData: Booking = Object.assign(bookingDataCopy,
       {
@@ -148,6 +186,7 @@ export class BookingDetailsComponent implements OnInit {
             this.bookingsService.createBookedItem(finalItemData).subscribe();
           });
           this.router.navigate(['/edit/confirmed'], { state: { id: data.id, name: data.name, email: data.email, submitted: true } });
+          this.service.publish('bookingRecorded');
         });
     } else if (history.state.edit === true) { // touchwood condition lol
       this.bookingsService.updateBooking(history.state.source.id, finalData).subscribe(
@@ -159,6 +198,7 @@ export class BookingDetailsComponent implements OnInit {
             this.bookingsService.createBookedItem(finalItemData).subscribe();
           });
           this.router.navigate(['/edit/confirmed'], { state: { id: data.id, name: data.name, email: data.email, submitted: true } });
+          this.service.publish('bookingRecorded');
         });
     }
   }
@@ -191,5 +231,20 @@ export class BookingConfirmComponent implements OnInit {
         this.snackbar.open('Email resent. Please wait...', 'OK', { duration: 5000, });
       }
     );
+  }
+}
+
+// check for cap on items (it's kinda complicated since it needs the data from the db directly)
+export class ExceedAmountValidator {
+  static createExceedAmountValidator(itemsService: ItemsService): AsyncValidatorFn {
+    return (formArray: FormArray): Observable<ValidationErrors> => {
+      return itemsService.getItemsList().pipe(map((items) => {
+        for (const element of formArray.value) {
+          if (element.quantity > items.filter(ele => ele.id === element.item)[0].quantity) {
+            return { exceed: true };
+          }
+        }
+      }));
+    };
   }
 }
