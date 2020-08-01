@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, Inject } from '@angular/core';
+import { Component, OnInit, ViewChild, Inject, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { ItemsService } from '../model-service/items/items.service';
@@ -7,18 +7,17 @@ import { BookingsService } from '../model-service/bookings/bookings.service';
 import { Items } from '../model-service/items/items';
 import { BookedItem } from '../model-service/items/items';
 
+import { LogoutComponent } from '../logout/logout.component';
 import { ItemDetailsComponent } from '../item-details/item-details.component';
 
-import { ComParentChildService } from '../model-service/callchildtoparent.service';
+import { ComponentBridgingService } from '../model-service/componentbridging.service';
 
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 
-import { FullCalendarComponent } from '@fullcalendar/angular';
 import { CalendarOptions } from '@fullcalendar/angular';
-import dayGridPlugin from '@fullcalendar/daygrid';
 import { Subscription } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
@@ -29,7 +28,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
   templateUrl: './item-list.component.html',
   styleUrls: ['./item-list.component.scss']
 })
-export class ItemListComponent implements OnInit {
+export class ItemListComponent implements OnInit, OnDestroy {
 
   items = new MatTableDataSource<Items>();
   tableColumns: string[] = ['id', 'name', 'category', 'quantity', 'deposit', 'status'];
@@ -49,7 +48,8 @@ export class ItemListComponent implements OnInit {
     private itemsService: ItemsService,
     public dialog: MatDialog,
     private formBuilder: FormBuilder,
-    private service: ComParentChildService,
+    private service: ComponentBridgingService,
+    public lc: LogoutComponent
   ) { }
 
   ngOnInit() {
@@ -65,7 +65,6 @@ export class ItemListComponent implements OnInit {
     this.subscription = this.service.on('reloadData').subscribe(() => { this.reloadData(); });
   }
 
-  // tslint:disable-next-line: use-lifecycle-interface
   ngOnDestroy() {
     this.subscription.unsubscribe();
   }
@@ -95,7 +94,7 @@ export class ItemListComponent implements OnInit {
 
   itemFilterPredicate(data: Items, filter: any): boolean {
     for (const value in filter) {
-      if (!data[value].includes(filter[value])) {
+      if (!data[value].toLowerCase().includes(filter[value].toLowerCase())) {
         return false;
       }
     }
@@ -137,7 +136,6 @@ export class ItemListDialog implements OnInit {
   calendarEvents = [];
 
   calendarOptions: CalendarOptions = {
-    plugins: [dayGridPlugin],
     initialView: 'dayGridWeek',
     locale: 'en-au',
     height: '500px',
@@ -145,7 +143,7 @@ export class ItemListDialog implements OnInit {
   };
 
   // tslint:disable-next-line: variable-name
-  tableColumns_dialog = ['name', 'loan_start_time', 'loan_end_time', 'quantity'];
+  tableColumns_dialog = ['orgs', 'loan_start_time', 'loan_end_time', 'quantity'];
 
   editFormOpened = false;
 
@@ -157,10 +155,11 @@ export class ItemListDialog implements OnInit {
   constructor(
     public dialog: MatDialog,
     public dialogRef: MatDialogRef<ItemListDialog>,
-    private service: ComParentChildService,
+    private service: ComponentBridgingService,
     private snackbar: MatSnackBar,
     private itemsService: ItemsService,
-    @Inject(MAT_DIALOG_DATA) public itemData: any
+    @Inject(MAT_DIALOG_DATA) public itemData: any,
+    public lc: LogoutComponent
   ) { }
 
   ngOnInit() {
@@ -171,7 +170,7 @@ export class ItemListDialog implements OnInit {
     for (const events of this.itemData.people) {
       this.calendarEvents.push(
         {
-          title: `${events.booking_source.name} - ${events.quantity} items`,
+          title: `${events.booking_source.organization} - ${events.quantity} items`,
           start: events.booking_source.loan_start_time,
           // substr(0,10) is to extract the date only, 86400000 is added to include the return date
           end: new Date(new Date(events.booking_source.loan_end_time).getTime() + 86400000).toISOString().substr(0, 10)

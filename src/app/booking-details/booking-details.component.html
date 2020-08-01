@@ -22,27 +22,33 @@
     }
 </style>
 
-<mat-horizontal-stepper #stepper [linear]=true style="background-color: #F7F7F7; width:80%; margin: auto;"
+<mat-horizontal-stepper #stepper [linear]=true style="background-color: hsla(0, 0%, 97%, 0); width:80%; margin: auto;"
     (selectionChange)="selectionChange($event)">
     <mat-step [stepControl]="detailsForm">
         <form [formGroup]="detailsForm" (ngSubmit)="checkout()">
             <ng-template matStepLabel>Applicant Details</ng-template>
-            <mat-form-field style="width:45%">
+            <mat-form-field style="width:40%">
                 <mat-label>Name</mat-label>
                 <input matInput required class="form-control" formControlName="name">
                 <mat-error>Please enter a name.</mat-error>
             </mat-form-field>
+            <span style="margin-left: 10%;"></span>
+            <mat-form-field style="width:40%">
+                <mat-label>Organization</mat-label>
+                <input matInput required class="form-control" formControlName="organization">
+                <mat-error>Please enter a student organization.</mat-error>
+            </mat-form-field>
             <br>
-            <mat-form-field style="width:45%">
+            <mat-form-field style="width:40%">
                 <mat-label>NUS Email (e.g. e1234567@u.nus.edu)</mat-label>
                 <input matInput required class="form-control" formControlName="email">
                 <mat-error>Please enter a valid NUS email.</mat-error>
             </mat-form-field>
-            <br>
-            <mat-form-field style="width:45%">
-                <mat-label>Organization</mat-label>
-                <input matInput required class="form-control" formControlName="organization">
-                <mat-error>Please enter a student organization.</mat-error>
+            <span style="margin-left: 10%;"></span>
+            <mat-form-field style="width:40%">
+                <mat-label>Contact Number</mat-label>
+                <input matInput required class="form-control" formControlName="phone_no">
+                <mat-error>Please enter a valid contact number.</mat-error>
             </mat-form-field>
             <br>
             <mat-form-field style="width:90%">
@@ -108,6 +114,14 @@
             <button matStepperNext mat-raised-button color="primary" [disabled]="!itemsForm.valid"
                 type="submit">Next</button>
         </form>
+        <div class="parent" style="margin-top: 10px;">
+            <p class="fade child" style="color: #f44336;" [style.opacity]="checkForErrors().duplicate ? '1' : '0'"
+                [style.visibility]="checkForErrors().duplicate ? 'visible' : 'hidden'">There are duplicate items in your
+                booking.</p>
+            <p class="fade child" style="color: #f44336;" [style.opacity]="checkForErrors().exceed ? '1' : '0'"
+                [style.visibility]="checkForErrors().exceed ? 'visible' : 'hidden'">Some of your bookings are not
+                fulfillable.</p>
+        </div>
     </mat-step>
     <mat-step>
         <ng-template matStepLabel>Checkout</ng-template>
@@ -118,8 +132,9 @@
             <div class="column-left" style="margin-top: -20px; margin-left: -15px;">
                 <mat-list role="list">
                     <mat-list-item role="listitem">Name: {{inputGroup1['name']}}</mat-list-item>
-                    <mat-list-item role="listitem">Email: {{inputGroup1['email']}}</mat-list-item>
                     <mat-list-item role="listitem">Organization: {{inputGroup1['organization']}}</mat-list-item>
+                    <mat-list-item role="listitem">Email: {{inputGroup1['email']}}</mat-list-item>
+                    <mat-list-item role="listitem">Contact Number: {{inputGroup1['phone_no']}}</mat-list-item>
                     <mat-list-item role="listitem">Purpose: {{inputGroup1['reason']}}</mat-list-item>
                     <mat-list-item role="listitem">From: {{inputGroup1['loan_start_time']|date: 'd/M/yyyy'}}
                     </mat-list-item>
@@ -147,10 +162,33 @@
         </div>
         <div style="margin-bottom: 30px;">
             <h2>PDPA Agreement</h2>
+            <h2>Personal Data Protection Act</h2>
+
             <mat-checkbox #c required [checked]="editMode">
-                A generic PDPA clause.
+                <span>I consent to providing my Personal Data to NUSSU EXCO. By indicating my consent to provide my
+                    personal data in this form, I agree to receive updates and important announcements for the purpose
+                    of logistics sharing from NUSSU EXCO by email and phone. All personal information will be kept
+                    confidential and used for the purpose(s) stated only.</span>
+            </mat-checkbox>
+
+            <h2 style="margin-top: 30px">Withdrawal of Consent</h2>
+
+            <mat-checkbox #d required [checked]="editMode">
+                <span>To help you make an informed decision, withdrawing consent will result in not being able to
+                    receive updates and important announcements for the purpose of logistics loans and sharing with
+                    NUSSU EXCO. Should you wish to withdraw your consent for NUSSU EXCO to contact you for the purposes
+                    stated above, please notify us in writing to logistics@nussu.org.sg. We will then remove your
+                    personal information from our database. Please allow 10 business days for your request to take
+                    effect.</span>
             </mat-checkbox>
         </div>
-        <button mat-raised-button color="primary" (click)=onSubmit() [disabled]="!c.checked">Submit</button>
+        <button mat-raised-button color="primary" (click)=onSubmit() [disabled]="!c.checked||!d.checked">
+            <mat-icon>send</mat-icon>
+            Submit
+        </button>
+        <button mat-raised-button color="primary" (click)=print() style="margin-left: 10px">
+            <mat-icon>print</mat-icon>
+            Print
+        </button>
     </mat-step>
 </mat-horizontal-stepper>

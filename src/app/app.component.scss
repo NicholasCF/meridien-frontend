@@ -1,0 +1,10 @@
+@media print {
+    a,
+    app-logout {
+        display: none;
+    }
+}
+
+.fast-fade {
+    transition: all 0.1s;
+}
