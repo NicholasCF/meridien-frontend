@@ -24,7 +24,6 @@ export class LoginFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router
   ) {
-    console.log(loginService.currentUserValue);
   }
 
   ngOnInit(): void {
