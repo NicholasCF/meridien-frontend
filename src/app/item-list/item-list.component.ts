@@ -73,7 +73,6 @@ export class ItemListComponent implements OnInit, OnDestroy {
     this.itemsService.deleteAll()
       .subscribe(
         data => {
-          console.log(data);
           this.reloadData();
         },
         error => console.log('ERROR: ' + error));

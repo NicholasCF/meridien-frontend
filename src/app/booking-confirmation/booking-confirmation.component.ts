@@ -34,7 +34,6 @@ export class BookingConfirmationComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       this.token = params.token;
     });
-    console.log(this.token);
     this.bookingsService.getBookingByToken(this.token).subscribe(
       (booking: Booking) => {
         this.booking = booking;
