@@ -23,9 +23,7 @@ export class LoginFormComponent implements OnInit {
     private loginService: LoginService,
     private route: ActivatedRoute,
     private router: Router
-  ) {
-    console.log(loginService.currentUserValue);
-  }
+  ) {}
 
   ngOnInit(): void {
     this.returnUrl = this.route.snapshot.queryParams.returnUrl || '/';
