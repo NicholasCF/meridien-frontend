@@ -2,7 +2,7 @@ import { environment } from './../../environments/environment';
 import { Email } from './../model-service/emailtemplates/email';
 import { MailerService } from './../model-service/emailtemplates/mailer.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { FormGroup, FormBuilder } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 
@@ -23,8 +23,8 @@ export class MailSenderComponent {
     private router: Router,
   ) {
     this.mailForm = this.formBuilder.group({
-      recipient: '',
-      subject: '',
+      recipient: ['', Validators.required],
+      subject: ['', Validators.required],
       message: ''
     });
 

@@ -2,11 +2,13 @@
   <mat-form-field appearance="fill" style="width: 100%">
     <mat-label for="recipient">To</mat-label>
     <input matInput formControlName="recipient">
+    <mat-error>Unable to send email with no recipient.</mat-error>
   </mat-form-field>
   <br>
   <mat-form-field appearance="fill" style="width: 100%">
     <mat-label for="subject">Subject</mat-label>
     <input matInput formControlName="subject">
+    <mat-error>Unable to send email with no subject.</mat-error>
   </mat-form-field>
   <br>
   <editor 
@@ -31,5 +33,5 @@
     }"
   ></editor>
   <br>
-  <button mat-raised-button color="primary">Submit</button>
+  <button mat-raised-button color="primary" [disabled]="!mailForm.valid">Submit</button>
 </form>
