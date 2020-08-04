@@ -83,7 +83,7 @@
           <mat-icon>clear</mat-icon>
           Cancel
         </button>
-        <button mat-raised-button color="primary" type="submit" (click)="send_data(updateForm.value)" [disabled]="!updateForm.valid">
+        <button mat-raised-button color="primary" type="submit" (click)="send_data((isEdit || isNew) ? updateForm.value : updateForm.getRawValue())" [disabled]="!updateForm.valid">
           <mat-icon>{{(isEdit || isNew) ? 'done' : 'email'}}</mat-icon>
           {{(isEdit || isNew) ? 'Submit' : 'Send'}}
         </button>
