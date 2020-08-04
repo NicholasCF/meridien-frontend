@@ -41,14 +41,13 @@ export class MailSenderComponent {
     const snackbarString = 'Sent email';
     this.mailerService.send_email(data).subscribe(
       (data) => {
+        this.router.navigate(['/bookings']);
+        this.snackbar.open(snackbarString, 'OK', {duration: 5000, });
       },
       (err) => {
         console.log(err);
+        this.snackbar.open(err.error.error, 'OK', {duration: 5000, });
       }
     );
-
-    this.router.navigate(['/bookings']);
-    this.snackbar.open(snackbarString, 'OK', {duration: 5000, });
-
   }
 }
